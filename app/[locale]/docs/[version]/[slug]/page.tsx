@@ -1,6 +1,8 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
+import { remark } from "remark";
+import html from "remark-html";
 
 export const revalidate = 60;
 
@@ -26,9 +28,14 @@ export default async function DocPage({ params }: Props) {
   const file = fs.readFileSync(filePath, "utf-8");
   const { content } = matter(file);
 
+  const processed = await remark().use(html).process(content);
+  const contentHtml = processed.toString();
+
   return (
-    <div data-testid="doc-content" className="p-8">
-      <pre>{content}</pre>
-    </div>
+    <article
+      data-testid="doc-content"
+      className="prose max-w-none p-8"
+      dangerouslySetInnerHTML={{ __html: contentHtml }}
+    />
   );
 }
