@@ -1,41 +1,61 @@
+export const revalidate = 60;
+
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
 import { remark } from "remark";
 import html from "remark-html";
+import remarkGfm from "remark-gfm";
 
-export const revalidate = 60;
+interface Params {
+  locale: string;
+  version: string;
+  slug: string;
+}
 
-type Props = {
-  params: Promise<{
-    locale: string;
-    version: string;
-    slug: string;
-  }>;
-};
-
-export default async function DocPage({ params }: Props) {
+export default async function DocPage({
+  params,
+}: {
+  params: Promise<Params>;
+}) {
+  // ✅ IMPORTANT FIX
   const { locale, version, slug } = await params;
 
   const filePath = path.join(
     process.cwd(),
     "_docs",
-    version,
     locale,
+    version,
     `${slug}.md`
   );
 
-  const file = fs.readFileSync(filePath, "utf-8");
-  const { content } = matter(file);
+  if (!fs.existsSync(filePath)) {
+    return (
+      <main className="p-6">
+        <h1>Document not found</h1>
+      </main>
+    );
+  }
 
-  const processed = await remark().use(html).process(content);
-  const contentHtml = processed.toString();
+  const fileContent = fs.readFileSync(filePath, "utf-8");
+  const { content } = matter(fileContent);
+//   console.log("MARKDOWN CONTENT ↓↓↓");
+// console.log(content);
+
+
+  const processedContent = await remark()
+    .use(remarkGfm) 
+    .use(html)
+    .process(content);
+
+  const contentHtml = processedContent.toString();
 
   return (
-    <article
+    <main
       data-testid="doc-content"
-      className="prose max-w-none p-8"
-      dangerouslySetInnerHTML={{ __html: contentHtml }}
-    />
+      className="prose max-w-none p-6"
+    >
+      <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
+    </main>
   );
 }
