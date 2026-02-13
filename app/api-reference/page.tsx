@@ -1,5 +1,3 @@
-declare module 'swagger-ui-react';
-
 'use client'
 
 import SwaggerUI from 'swagger-ui-react'
