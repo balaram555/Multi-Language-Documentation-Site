@@ -1,0 +1,10 @@
+declare module 'swagger-ui-react';
+
+'use client'
+
+import SwaggerUI from 'swagger-ui-react'
+import 'swagger-ui-react/swagger-ui.css'
+
+export default function ApiReference() {
+  return <SwaggerUI url="/openapi.json" />
+}
